@@ -146,7 +146,7 @@ void handle_https_client(int client_socket) {
 
     struct sockaddr_in host_addr;
     host_addr.sin_family = AF_INET;
-    host_addr.sin_port = htons(443); //Connecting to default HTTPS port 443
+    host_addr.sin_port = htons(443);
     memcpy(&host_addr.sin_addr.s_addr, host_entry->h_addr, host_entry->h_length);
 
     // Connect to the host
@@ -213,14 +213,28 @@ void* handle_client(void* arg) {
     return NULL;
 }
 
-int main() {
+int main(int argc, char* argv[]) {
     load_blacklist_from_file();
-    
+    int proxy_port = PROXY_PORT;
+    // Parse command-line arguments
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "-a") == 0 && i + 1 < argc) {
+            add_to_blacklist(argv[i + 1]);
+            i++;
+        } else if (strcmp(argv[i], "-r") == 0 && i + 1 < argc) {
+            remove_from_blacklist(argv[i + 1]);
+            i++;
+        } else if (strcmp(argv[i], "-p") == 0 && i + 1 < argc) {
+            proxy_port = atoi(argv[i + 1]);
+            i++;
+        }
+    }
+
     int proxy_socket = socket(AF_INET, SOCK_STREAM, 0);
     struct sockaddr_in proxy_addr;
 
     proxy_addr.sin_family = AF_INET;
-    proxy_addr.sin_port = htons(PROXY_PORT);
+    proxy_addr.sin_port = htons(proxy_port);
     proxy_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
     if (bind(proxy_socket, (struct sockaddr*)&proxy_addr, sizeof(proxy_addr)) < 0) {
@@ -233,7 +247,7 @@ int main() {
         return 1;
     }
 
-    printf("Proxy server listening on port %d...\n", PROXY_PORT);
+    printf("Proxy server listening on port %d...\n", proxy_port);
 
     while (1) {
         struct sockaddr_in client_addr;
@@ -246,7 +260,6 @@ int main() {
             perror("Error accepting client connection");
         } else {
             printf("Handling client request...\n");
-            // handle_https_client(client_socket);
             pthread_t thread_id;
             pthread_create(&thread_id, NULL, handle_client, client_socket);
             pthread_detach(thread_id);
