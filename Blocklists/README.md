@@ -14,7 +14,7 @@ www.youtube.com
 www.facebook.com
 www.example.com
 
-*Explanation:*
+**Explanation:**
 
 The .txt file serves as a blocklist for the proxy server.
 Each URL to be blocked is listed on a separate line without any additional characters like quotes.
