@@ -39,3 +39,6 @@ You can quit the proxy server by entering the q command at the proxy server's co
 ```
 Enter a command (a - add, r - remove, l - list, q - quit): q
 ```
+
+## Future Ideas
+Plans to implement a more robust technique to address queries parallely on HTTPS. Current technique uses multithreading to serve the connections which can be a bottleneck while scaling. Primarily the goal is to minimise the lag due to blocking I/O operations by implementing asynchronous I/O or Event Driven Architecture.
